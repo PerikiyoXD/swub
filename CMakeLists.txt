@@ -13,6 +13,8 @@ set(SOURCES
     src/main.cpp
     src/wm.cpp
     src/background_drawer.cpp
+    src/cursor_drawer.cpp
+    src/frame_drawer.cpp
 )
 
 # Add executable

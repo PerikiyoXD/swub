@@ -23,6 +23,10 @@ WindowManager::WindowManager() {
     // Set the error handler
     XSetErrorHandler(handleXError);
 
+    // Set the cursor
+    cursorDrawer_ = new CursorDrawer(display_, root_);
+    cursorDrawer_->setDefaultCursor();
+
     // Select input events on the root window
     XSelectInput(display_, root_, SubstructureRedirectMask | SubstructureNotifyMask | KeyPressMask);
 
@@ -33,6 +37,9 @@ WindowManager::WindowManager() {
     // Initialize and draw the background
     backgroundDrawer_ = new BackgroundDrawer(display_, root_);
     backgroundDrawer_->drawBackground();
+
+    // Initialize the frame drawer
+    frameDrawer_ = new FrameDrawer(display_, root_);
 }
 
 WindowManager::~WindowManager() {
@@ -40,6 +47,8 @@ WindowManager::~WindowManager() {
     std::cout << "Destroying WindowManager." << std::endl;
 #endif
     delete backgroundDrawer_;  // Clean up the BackgroundDrawer
+    delete cursorDrawer_;  // Clean up the CursorDrawer
+    delete frameDrawer_;  // Clean up the FrameDrawer
     XCloseDisplay(display_);
 }
 
@@ -59,13 +68,19 @@ void WindowManager::run() {
             case MapRequest:
                 onMapRequest(e.xmaprequest);
                 break;
+            case UnmapNotify:
+                onUnmapNotify(e.xunmap);
+                break;
+            case DestroyNotify:
+                onDestroyNotify(e.xdestroywindow);
+                break;
             case ConfigureRequest:
                 onConfigureRequest(e.xconfigurerequest);
                 break;
             case KeyPress:
                 onKeyPress(e.xkey);
                 break;
-            // Handle other events like DestroyNotify, etc.
+            // Handle other events
         }
     }
 }
@@ -74,10 +89,30 @@ void WindowManager::onMapRequest(const XMapRequestEvent& e) {
 #ifdef DEBUG
     std::cout << "Handling MapRequest event." << std::endl;
 #endif
+    frameDrawer_->createFrame(e.window);
     XMapWindow(display_, e.window);
     windows_.push_back(e.window);
     tileWindows();
 }
+
+void WindowManager::onUnmapNotify(const XUnmapEvent& e) {
+#ifdef DEBUG
+    std::cout << "Handling UnmapNotify event." << std::endl;
+#endif
+    frameDrawer_->removeFrame(e.window);
+    windows_.erase(std::remove(windows_.begin(), windows_.end(), e.window), windows_.end());
+    tileWindows();
+}
+
+void WindowManager::onDestroyNotify(const XDestroyWindowEvent& e) {
+#ifdef DEBUG
+    std::cout << "Handling DestroyNotify event." << std::endl;
+#endif
+    frameDrawer_->removeFrame(e.window);
+    windows_.erase(std::remove(windows_.begin(), windows_.end(), e.window), windows_.end());
+    tileWindows();
+}
+
 
 void WindowManager::onConfigureRequest(const XConfigureRequestEvent& e) {
 #ifdef DEBUG
