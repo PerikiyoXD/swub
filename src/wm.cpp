@@ -10,6 +10,9 @@ int handleXError(Display* display, XErrorEvent* error) {
 }
 
 WindowManager::WindowManager() {
+#ifdef DEBUG
+    std::cout << "Initializing WindowManager." << std::endl;
+#endif
     display_ = XOpenDisplay(nullptr);
     if (!display_) {
         std::cerr << "Failed to open X display\n";
@@ -33,14 +36,24 @@ WindowManager::WindowManager() {
 }
 
 WindowManager::~WindowManager() {
+#ifdef DEBUG
+    std::cout << "Destroying WindowManager." << std::endl;
+#endif
     delete backgroundDrawer_;  // Clean up the BackgroundDrawer
     XCloseDisplay(display_);
 }
 
 void WindowManager::run() {
+#ifdef DEBUG
+    std::cout << "Entering main event loop." << std::endl;
+#endif
     while (true) {
         XEvent e;
         XNextEvent(display_, &e);
+
+#ifdef DEBUG
+        std::cout << "Event received: " << e.type << std::endl;
+#endif
 
         switch (e.type) {
             case MapRequest:
@@ -58,12 +71,18 @@ void WindowManager::run() {
 }
 
 void WindowManager::onMapRequest(const XMapRequestEvent& e) {
+#ifdef DEBUG
+    std::cout << "Handling MapRequest event." << std::endl;
+#endif
     XMapWindow(display_, e.window);
     windows_.push_back(e.window);
     tileWindows();
 }
 
 void WindowManager::onConfigureRequest(const XConfigureRequestEvent& e) {
+#ifdef DEBUG
+    std::cout << "Handling ConfigureRequest event." << std::endl;
+#endif
     XWindowChanges changes;
     changes.x = e.x;
     changes.y = e.y;
@@ -76,7 +95,13 @@ void WindowManager::onConfigureRequest(const XConfigureRequestEvent& e) {
 }
 
 void WindowManager::onKeyPress(const XKeyEvent& e) {
+#ifdef DEBUG
+    std::cout << "Handling KeyPress event." << std::endl;
+#endif
     if (e.keycode == XKeysymToKeycode(display_, XStringToKeysym("J"))) {
+#ifdef DEBUG
+        std::cout << "Focusing next window." << std::endl;
+#endif
         // Focus next window
         if (!windows_.empty()) {
             Window focused;
@@ -90,6 +115,9 @@ void WindowManager::onKeyPress(const XKeyEvent& e) {
             }
         }
     } else if (e.keycode == XKeysymToKeycode(display_, XStringToKeysym("K"))) {
+#ifdef DEBUG
+        std::cout << "Focusing previous window." << std::endl;
+#endif
         // Focus previous window
         if (!windows_.empty()) {
             Window focused;
@@ -107,6 +135,9 @@ void WindowManager::onKeyPress(const XKeyEvent& e) {
 }
 
 void WindowManager::tileWindows() {
+#ifdef DEBUG
+    std::cout << "Tiling windows." << std::endl;
+#endif
     unsigned int numWindows = windows_.size();
     if (numWindows == 0) return;
 
