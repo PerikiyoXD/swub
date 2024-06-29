@@ -17,6 +17,7 @@ private:
     Display* display_;
     Window root_;
     std::unordered_map<Window, Window> frames_;
+    unsigned long frame_border_color_;  // Store the frame border color pixel
 
     void drawFrame(Window frame);
 };

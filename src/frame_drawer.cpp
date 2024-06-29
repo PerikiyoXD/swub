@@ -6,6 +6,13 @@ FrameDrawer::FrameDrawer(Display* display, Window root)
 #ifdef DEBUG
     std::cout << "FrameDrawer initialized." << std::endl;
 #endif
+    // Allocate the frame border color once
+    XColor color, exact_color;
+    if (XAllocNamedColor(display_, DefaultColormap(display_, DefaultScreen(display_)), "cyan", &color, &exact_color)) {
+        frame_border_color_ = color.pixel;
+    } else {
+        frame_border_color_ = BlackPixel(display_, DefaultScreen(display_));
+    }
 }
 
 FrameDrawer::~FrameDrawer() {
@@ -56,8 +63,9 @@ void FrameDrawer::drawFrame(Window frame) {
 #ifdef DEBUG
     std::cout << "Drawing frame for window: " << frame << std::endl;
 #endif
-    // For now, this is a no-op since we use XCreateSimpleWindow to set border colors.
-    // In a more advanced version, this method could handle custom drawing.
+    // Use the stored frame border color
+    XSetWindowBorder(display_, frame, frame_border_color_);
+    XSetWindowBorderWidth(display_, frame, 2);
 }
 
 Window FrameDrawer::getFrame(Window window) {
