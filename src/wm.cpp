@@ -5,8 +5,8 @@
 int handleXError(Display* display, XErrorEvent* error) {
     char errorMessage[256];
     XGetErrorText(display, error->error_code, errorMessage, sizeof(errorMessage));
-    std::cerr << "X Error: " << errorMessage << std::endl;
-    return 0; // Return an int instead of void
+    std::cerr << "X Error: " << errorMessage << " (Error code: " << error->error_code << ")" << std::endl;
+    return 0;
 }
 
 WindowManager::WindowManager() {
@@ -80,7 +80,7 @@ void WindowManager::run() {
             case KeyPress:
                 onKeyPress(e.xkey);
                 break;
-            // Handle other events
+            // Handle other events like DestroyNotify, etc.
         }
     }
 }
@@ -112,7 +112,6 @@ void WindowManager::onDestroyNotify(const XDestroyWindowEvent& e) {
     windows_.erase(std::remove(windows_.begin(), windows_.end(), e.window), windows_.end());
     tileWindows();
 }
-
 
 void WindowManager::onConfigureRequest(const XConfigureRequestEvent& e) {
 #ifdef DEBUG

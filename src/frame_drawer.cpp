@@ -10,10 +10,9 @@ FrameDrawer::FrameDrawer(Display* display, Window root)
 
 FrameDrawer::~FrameDrawer() {
     for (auto& pair : frames_) {
-        Window frame = pair.second;
-        XUnmapWindow(display_, frame);
-        XDestroyWindow(display_, frame);
+        XDestroyWindow(display_, pair.second);
     }
+    frames_.clear();
 }
 
 void FrameDrawer::createFrame(Window window) {
