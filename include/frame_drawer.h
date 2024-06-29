@@ -11,6 +11,7 @@ public:
     ~FrameDrawer();  // Destructor to clean up resources
     void createFrame(Window window);
     void removeFrame(Window window);
+    Window getFrame(Window window);  // Method to get the frame window
 
 private:
     Display* display_;

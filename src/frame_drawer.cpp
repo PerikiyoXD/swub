@@ -26,6 +26,7 @@ void FrameDrawer::createFrame(Window window) {
     Window frame = XCreateSimpleWindow(display_, root_, attr.x, attr.y, attr.width, attr.height, 2, BlackPixel(display_, DefaultScreen(display_)), WhitePixel(display_, DefaultScreen(display_)));
 
     // Reparent the window inside the frame
+    XSelectInput(display_, frame, SubstructureRedirectMask | SubstructureNotifyMask);
     XReparentWindow(display_, window, frame, 0, 0);
 
     // Map the frame window
@@ -57,4 +58,9 @@ void FrameDrawer::drawFrame(Window frame) {
 #endif
     // For now, this is a no-op since we use XCreateSimpleWindow to set border colors.
     // In a more advanced version, this method could handle custom drawing.
+}
+
+Window FrameDrawer::getFrame(Window window) {
+    auto it = frames_.find(window);
+    return it != frames_.end() ? it->second : None;
 }

@@ -117,15 +117,20 @@ void WindowManager::onConfigureRequest(const XConfigureRequestEvent& e) {
 #ifdef DEBUG
     std::cout << "Handling ConfigureRequest event." << std::endl;
 #endif
+    Window frame = frameDrawer_->getFrame(e.window);
+    if (frame != None) {
+        // Resize and move the frame window
+        XMoveResizeWindow(display_, frame, e.x, e.y, e.width, e.height);
+    }
     XWindowChanges changes;
-    changes.x = e.x;
-    changes.y = e.y;
+    changes.x = 0;
+    changes.y = 0;
     changes.width = e.width;
     changes.height = e.height;
     changes.border_width = e.border_width;
     changes.sibling = e.above;
     changes.stack_mode = e.detail;
-    XConfigureWindow(display_, e.window, e.value_mask, &changes);
+    XConfigureWindow(display_, e.window, e.value_mask & ~(CWX | CWY), &changes);
 }
 
 void WindowManager::onKeyPress(const XKeyEvent& e) {
@@ -179,6 +184,10 @@ void WindowManager::tileWindows() {
     unsigned int height = DisplayHeight(display_, DefaultScreen(display_));
 
     for (unsigned int i = 0; i < numWindows; ++i) {
-        XMoveResizeWindow(display_, windows_[i], i * width, 0, width, height);
+        Window frame = frameDrawer_->getFrame(windows_[i]);
+        if (frame != None) {
+            XMoveResizeWindow(display_, frame, i * width, 0, width, height);
+            XMoveResizeWindow(display_, windows_[i], 0, 0, width, height);
+        }
     }
 }
